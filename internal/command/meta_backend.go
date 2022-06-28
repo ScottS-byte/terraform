@@ -466,10 +466,15 @@ func (m *Meta) backendConfig(opts *BackendOpts) (*configs.Backend, int, tfdiags.
 
 	bf := backendInit.Backend(c.Type)
 	if bf == nil {
+		detail := fmt.Sprintf("There is no backend type named %q.", c.Type)
+		if _, removed := backendInit.RemovedBackends[c.Type]; removed {
+			detail = fmt.Sprintf("The %q backend is no longer supported.", c.Type)
+		}
+
 		diags = diags.Append(&hcl.Diagnostic{
 			Severity: hcl.DiagError,
 			Summary:  "Invalid backend type",
-			Detail:   fmt.Sprintf("There is no backend type named %q.", c.Type),
+			Detail:   detail,
 			Subject:  &c.TypeRange,
 		})
 		return nil, 0, diags
